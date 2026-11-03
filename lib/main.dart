@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+
+import 'screens/camera_screen.dart';
+import 'screens/events_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/splash_screen.dart';
+import 'services/detection_service.dart';
 import 'widgets/bottom_nav.dart';
 
 void main() => runApp(const MyApp());
@@ -10,11 +16,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Digital Access',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Digital Access'),
+      home: const SplashScreen(),
     );
   }
 }
@@ -31,20 +38,32 @@ class _MyHomePageState extends State<MyHomePage> {
   String _activeTab = 'cameras';
 
   @override
+  void initState() {
+    super.initState();
+    DetectionService.instance.start();
+  }
+
+  @override
+  void dispose() {
+    DetectionService.instance.stop();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Widget body;
     switch (_activeTab) {
       case 'events':
-        body = const Center(child: Text('Events'));
+        body = const EventsScreen();
         break;
       case 'devices':
         body = const Center(child: Text('Devices'));
         break;
       case 'settings':
-        body = const Center(child: Text('Settings'));
+        body = const SettingsScreen();
         break;
       default:
-        body = const Center(child: Text('Cameras'));
+        body = const CameraScreen();
     }
 
     return Scaffold(
