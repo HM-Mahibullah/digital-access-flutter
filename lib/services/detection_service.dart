@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-import '../data/authorized_persons.dart';
 import 'app_settings.dart';
 
 class Detection {
@@ -15,9 +14,10 @@ class Detection {
   Detection(this.name, this.authorized, this.conf);
 
   /// Server JSON: {"name": "Tanmoy", "status": "authorized", "conf": 0.91}
+  /// কে authorized, সেই সিদ্ধান্ত শুধু Pi server নেয় (একটাই জায়গায় নিয়ম, তাই দুই তালিকা মেলানোর ঝামেলা নেই)।
   factory Detection.fromJson(Map<String, dynamic> j) {
     final name = j['name'] as String?;
-    final authorized = j['status'] == 'authorized' && name != null && authorizedPersons.contains(name);
+    final authorized = j['status'] == 'authorized' && name != null;
     return Detection(name, authorized, (j['conf'] as num?)?.toDouble() ?? 0);
   }
 
@@ -38,9 +38,6 @@ class DetectionService extends ChangeNotifier {
   List<Detection> detections = [];
   double fps = 0;
   bool connected = false;
-
-  /// mock_server.py চললে true: ডেটা simulated, আসল AI ফলাফল নয়
-  bool simulated = false;
   final List<DetectionEvent> events = [];
 
   Timer? _timer;
@@ -73,7 +70,6 @@ class DetectionService extends ChangeNotifier {
           .map((e) => Detection.fromJson(e as Map<String, dynamic>))
           .toList();
       fps = (data['fps'] as num?)?.toDouble() ?? 0;
-      simulated = data['simulated'] == true;
       connected = true;
       _logEvents();
     } catch (_) {
